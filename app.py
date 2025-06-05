@@ -166,137 +166,6 @@ FIFA_TO_COUNTRY = {
     "JAM": "Jamaica",
     "PAN": "Panama",
     "TRI": "Trinidad and Tobago",
-    "AFG": "Afghanistan",
-    "ALB": "Albania",
-    "ASA": "American Samoa",
-    "AND": "Andorra",
-    "ANG": "Angola",
-    "AIA": "Anguilla",
-    "ATG": "Antigua and Barbuda",
-    "ARM": "Armenia",
-    "ARU": "Aruba",
-    "AUT": "Austria",
-    "AZE": "Azerbaijan",
-    "BAH": "Bahamas",
-    "BHR": "Bahrain",
-    "BAN": "Bangladesh",
-    "BRB": "Barbados",
-    "BLR": "Belarus",
-    "BEL": "Belgium",
-    "BLZ": "Belize",
-    "BEN": "Benin",
-    "BER": "Bermuda",
-    "BHU": "Bhutan",
-    "BOL": "Bolivia",
-    "BIH": "Bosnia and Herzegovina",
-    "BOT": "Botswana",
-    "VGB": "British Virgin Islands",
-    "BRU": "Brunei",
-    "BUL": "Bulgaria",
-    "BFA": "Burkina Faso",
-    "BDI": "Burundi",
-    "CAM": "Cambodia",
-    "CMR": "Cameroon",
-    "CPV": "Cape Verde",
-    "CAY": "Cayman Islands",
-    "CTA": "Central African Republic",
-    "CHA": "Chad",
-    "TPE": "Chinese Taipei",
-    "COM": "Comoros",
-    "COK": "Cook Islands",
-    "CUB": "Cuba",
-    "CUW": "Curaçao",
-    "CYP": "Cyprus",
-    "CZE": "Czech Republic",
-    "DJI": "Djibouti",
-    "DMA": "Dominica",
-    "DOM": "Dominican Republic",
-    "TLS": "Timor-Leste",
-    "EGY": "Egypt",
-    "SLV": "El Salvador",
-    "EQG": "Equatorial Guinea",
-    "ERI": "Eritrea",
-    "EST": "Estonia",
-    "SWZ": "Eswatini",
-    "ETH": "Ethiopia",
-    "FRO": "Faroe Islands",
-    "FIJ": "Fiji",
-    "FIN": "Finland",
-    "FRA": "France",
-    "GAB": "Gabon",
-    "GAM": "Gambia",
-    "GEO": "Georgia",
-    "GHA": "Ghana",
-    "GIB": "Gibraltar",
-    "GRE": "Greece",
-    "GRN": "Grenada",
-    "GUM": "Guam",
-    "GUA": "Guatemala",
-    "GUI": "Guinea",
-    "GNB": "Guinea-Bissau",
-    "GUY": "Guyana",
-    "HAI": "Haiti",
-    "HKG": "Hong Kong",
-    "HUN": "Hungary",
-    "ISL": "Iceland",
-    "IND": "India",
-    "IDN": "Indonesia",
-    "IRQ": "Iraq",
-    "ISR": "Israel",
-    "ITA": "Italy",
-    "JPN": "Japan",
-    "JOR": "Jordan",
-    "KAZ": "Kazakhstan",
-    "KEN": "Kenya",
-    "KOS": "Kosovo",
-    "KUW": "Kuwait",
-    "KGZ": "Kyrgyzstan",
-    "LAO": "Laos",
-    "LVA": "Latvia",
-    "LBN": "Lebanon",
-    "LES": "Lesotho",
-    "LBR": "Liberia",
-    "LBY": "Libya",
-    "LIE": "Liechtenstein",
-    "LTU": "Lithuania",
-    "LUX": "Luxembourg",
-    "MAC": "Macau",
-    "MAD": "Madagascar",
-    "MWI": "Malawi",
-    "MAS": "Malaysia",
-    "MDV": "Maldives",
-    "MLI": "Mali",
-    "MLT": "Malta",
-    "MTN": "Mauritania",
-    "MRI": "Mauritius",
-    "MDA": "Moldova",
-    "MNG": "Mongolia",
-    "MNE": "Montenegro",
-    "MSR": "Montserrat",
-    "MAR": "Morocco",
-    "MOZ": "Mozambique",
-    "MYA": "Myanmar",
-    "NAM": "Namibia",
-    "NEP": "Nepal",
-    "NCL": "New Caledonia",
-    "NCA": "Nicaragua",
-    "NIG": "Niger",
-    "NGA": "Nigeria",
-    "PRK": "North Korea",
-    "MKD": "North Macedonia",
-    "NOR": "Norway",
-    "OMA": "Oman",
-    "PAK": "Pakistan",
-    "PLE": "Palestine",
-    "PNG": "Papua New Guinea",
-    "PHI": "Philippines",
-    "POL": "Poland",
-    "PUR": "Puerto Rico",
-    "QAT": "Qatar",
-    "IRL": "Republic of Ireland",
-    "ROU": "Romania",
-    "RUS": "Russia",
-    "RWA": "Rwanda",
     "SKN": "Saint Kitts and Nevis",
     "LCA": "Saint Lucia",
     "VIN": "Saint Vincent and the Grenadines",
@@ -337,9 +206,55 @@ FIFA_TO_COUNTRY = {
     "VIE": "Vietnam",
     "YEM": "Yemen",
     "ZAM": "Zambia",
-    "ZIM": "Zimbabwe"
+    "ZIM": "Zimbabwe",
+    "BES": "Bonaire",
+    "BOE": "Bonaire",
+    "GUF": "French Guiana",
+    "GLP": "Guadeloupe",
+    "KIR": "Kiribati",
+    "MTQ": "Martinique",
+    "NIU": "Niue",
+    "MNP": "Northern Mariana Islands",
+    "NMI": "Northern Mariana Islands",
+    "REU": "Réunion",
+    "MAF": "Saint Martin",
+    "SMN": "Saint Martin",
+    "SXM": "Sint Maarten",
+    "SMA": "Sint Maarten",
+    "TUV": "Tuvalu",
+    "ZAN": "Zanzibar",
+    "ALA": "Åland",
+    "BSQ": "Basque Country",
+    "CAT": "Catalonia",
+    "FLK": "Falkland Islands",
+    "FIS": "Falkland Islands",
+    "GBR": "Great Britain",
+    "GOZ": "Gozo",
+    "GRL": "Greenland",
+    "GGY": "Guernsey",
+    "JER": "Jersey",
+    "IOM": "Isle of Man",
+    "MHL": "Marshall Islands",
+    "FSM": "Micronesia",
+    "MON": "Monaco",
+    "MCO": "Monaco",
+    "NRU": "Nauru",
+    "NCY": "Northern Cyprus",
+    "TRNC": "Northern Cyprus",
+    "PLW": "Palau",
+    "BLM": "Saint Barthélemy",
+    "SPM": "Saint Pierre and Miquelon",
+    "SHN": "Saint Helena",
+    "SRD": "Sardinia",
+    "SAR": "Sardinia",
+    "PMR": "Transnistria",
+    "TOK": "Tokelau",
+    "VAT": "Vatican City",
+    "WLF": "Wallis and Futuna",
+    "WAF": "Wallis and Futuna",
+    "ESH": "Western Sahara",
+    "SADR": "Western Sahara"
 }
-
 
 # ────────────────────────────────────────────────────────────────────────────────
 # 3) GEOCODING + CACHING UTILITIES
@@ -677,28 +592,50 @@ if st.session_state.players_data is None:
     # ---- Upload Section ----
     st.markdown(
         """
-        <div class="upload-section">
-            <h3>📁 Upload Your FM Export</h3>
-            <p>Supported formats: HTML (direct from FM) or CSV</p>
+        <div class="upload-section" style="
+            background-color: var(--background-color, #1E1E1E); 
+            color: var(--text-color, #E0E0E0); 
+            padding: 20px; 
+            border-radius: 8px;
+        ">
+            <h3 style="color: var(--accent-color, #4DA6FF);">📁 Upload Your FM Export</h3>
+            <p style="color: var(--secondary-text-color, #CCCCCC);">Supported formats: HTML (direct from FM) or CSV</p>
         </div>
+        <style>
+            :root {
+                --background-color: #FFFFFF;
+                --text-color: #333333;
+                --accent-color: #1E88E5;
+                --secondary-text-color: #666666;
+            }
+            
+            @media (prefers-color-scheme: dark) {
+                :root {
+                    --background-color: #1E1E1E;
+                    --text-color: #E0E0E0;
+                    --accent-color: #4DA6FF;
+                    --secondary-text-color: #CCCCCC;
+                }
+            }
+        </style>
         """,
         unsafe_allow_html=True,
     )
 
     # ---- How to export the birthplace view from FM? with Info Tooltip ----
     instruction_text_upload = '''
-How to export the birthplace view from FM? <span class='info-icon' title='1. Navigate to the squad page in Football Manager.\n2. Load the birthplace_view so the Birthplace column is visible.\n3. Click the first player row to highlight it.\n4. Select all players: Ctrl+A (Windows) or ⌘+A (macOS).\n5. Open the print/export dialog: Ctrl+P (Windows) or ⌘+P (macOS).\n6. Choose "Web Page" (or "Save as Web Page") and save.'>&#9432;</span>
+<span style="color: var(--text-color, #333333);">How to export the birthplace view from FM? <span class='info-icon' style="color: var(--accent-color, #1E88E5); cursor: pointer;" title='1. Navigate to the squad page in Football Manager.\n2. Load the birthplace_view so the Birthplace column is visible.\n3. Click the first player row to highlight it.\n4. Select all players: Ctrl+A (Windows) or ⌘+A (macOS).\n5. Open the print/export dialog: Ctrl+P (Windows) or ⌘+P (macOS).\n6. Choose "Web Page" (or "Save as Web Page") and save.'>&#9432;</span></span>
 '''  
     st.markdown(instruction_text_upload, unsafe_allow_html=True)
     
     # ---- Simple clickable link (no gap) ----
     st.markdown(
-        "<div style='margin-top: -15px;'><a href='https://mega.nz/file/BQEGBDSK#KaAzX5MRC5RvJE0onqHC7naalwKqTlph5bOfdtnXVA4'>Download birthplace_view.fmf</a></div>",
+        "<div style='margin-top: -15px;'><a href='https://mega.nz/file/BQEGBDSK#KaAzX5MRC5RvJE0onqHC7naalwKqTlph5bOfdtnXVA4' style='color: var(--accent-color, #1E88E5); text-decoration: underline;'>Download birthplace_view.fmf</a></div>",
         unsafe_allow_html=True,
     )
 
     # ---- Add separation before file uploader ----
-    st.markdown("<hr style='margin: 20px 0;'>", unsafe_allow_html=True)
+    st.markdown("<hr style='margin: 20px 0; border-color: var(--secondary-text-color, #666666); opacity: 0.3;'>", unsafe_allow_html=True)
     
     uploaded_file = st.file_uploader(
         "Choose your Football Manager export file",
@@ -793,7 +730,7 @@ st.markdown(
     """
     <div style="text-align: center; color: #666; padding: 1rem;">
         <p>🔧 Built with Streamlit | 🗺️ Maps by OpenStreetMap | 📍 Geocoding by Nominatim</p>
-        <p>© Created by Ryoshiin</p>
+        <p>© Created by Ryoshiin, 2025</p>
     </div>
     """,
     unsafe_allow_html=True,
