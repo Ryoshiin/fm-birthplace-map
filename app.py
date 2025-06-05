@@ -124,6 +124,223 @@ if "geocode_cache" not in st.session_state:
 if "players_data" not in st.session_state:
     st.session_state.players_data = None
 
+# FIFA 3-letter codes to full country names
+FIFA_TO_COUNTRY = {
+    "WAL": "Wales",
+    "ENG": "England",
+    "SCO": "Scotland",
+    "NIR": "Northern Ireland",
+    "ALG": "Algeria",
+    "CIV": "Ivory Coast",
+    "CGO": "Congo",
+    "COD": "DR Congo",
+    "GER": "Germany",
+    "POR": "Portugal",
+    "CRO": "Croatia",
+    "SUI": "Switzerland",
+    "DEN": "Denmark",
+    "SWE": "Sweden",
+    "NED": "Netherlands",
+    "IRN": "Iran",
+    "KSA": "Saudi Arabia",
+    "CHN": "China",
+    "KOR": "South Korea",
+    "JAP": "Japan",
+    "RSA": "South Africa",
+    "AUS": "Australia",
+    "NZL": "New Zealand",
+    "ARG": "Argentina",
+    "BRA": "Brazil",
+    "CHI": "Chile",
+    "COL": "Colombia",
+    "ECU": "Ecuador",
+    "PAR": "Paraguay",
+    "PER": "Peru",
+    "URU": "Uruguay",
+    "VEN": "Venezuela",
+    "MEX": "Mexico",
+    "USA": "United States",
+    "CAN": "Canada",
+    "CRC": "Costa Rica",
+    "HON": "Honduras",
+    "JAM": "Jamaica",
+    "PAN": "Panama",
+    "TRI": "Trinidad and Tobago",
+    "AFG": "Afghanistan",
+    "ALB": "Albania",
+    "ASA": "American Samoa",
+    "AND": "Andorra",
+    "ANG": "Angola",
+    "AIA": "Anguilla",
+    "ATG": "Antigua and Barbuda",
+    "ARM": "Armenia",
+    "ARU": "Aruba",
+    "AUT": "Austria",
+    "AZE": "Azerbaijan",
+    "BAH": "Bahamas",
+    "BHR": "Bahrain",
+    "BAN": "Bangladesh",
+    "BRB": "Barbados",
+    "BLR": "Belarus",
+    "BEL": "Belgium",
+    "BLZ": "Belize",
+    "BEN": "Benin",
+    "BER": "Bermuda",
+    "BHU": "Bhutan",
+    "BOL": "Bolivia",
+    "BIH": "Bosnia and Herzegovina",
+    "BOT": "Botswana",
+    "VGB": "British Virgin Islands",
+    "BRU": "Brunei",
+    "BUL": "Bulgaria",
+    "BFA": "Burkina Faso",
+    "BDI": "Burundi",
+    "CAM": "Cambodia",
+    "CMR": "Cameroon",
+    "CPV": "Cape Verde",
+    "CAY": "Cayman Islands",
+    "CTA": "Central African Republic",
+    "CHA": "Chad",
+    "TPE": "Chinese Taipei",
+    "COM": "Comoros",
+    "COK": "Cook Islands",
+    "CUB": "Cuba",
+    "CUW": "Curaçao",
+    "CYP": "Cyprus",
+    "CZE": "Czech Republic",
+    "DJI": "Djibouti",
+    "DMA": "Dominica",
+    "DOM": "Dominican Republic",
+    "TLS": "Timor-Leste",
+    "EGY": "Egypt",
+    "SLV": "El Salvador",
+    "EQG": "Equatorial Guinea",
+    "ERI": "Eritrea",
+    "EST": "Estonia",
+    "SWZ": "Eswatini",
+    "ETH": "Ethiopia",
+    "FRO": "Faroe Islands",
+    "FIJ": "Fiji",
+    "FIN": "Finland",
+    "FRA": "France",
+    "GAB": "Gabon",
+    "GAM": "Gambia",
+    "GEO": "Georgia",
+    "GHA": "Ghana",
+    "GIB": "Gibraltar",
+    "GRE": "Greece",
+    "GRN": "Grenada",
+    "GUM": "Guam",
+    "GUA": "Guatemala",
+    "GUI": "Guinea",
+    "GNB": "Guinea-Bissau",
+    "GUY": "Guyana",
+    "HAI": "Haiti",
+    "HKG": "Hong Kong",
+    "HUN": "Hungary",
+    "ISL": "Iceland",
+    "IND": "India",
+    "IDN": "Indonesia",
+    "IRQ": "Iraq",
+    "ISR": "Israel",
+    "ITA": "Italy",
+    "JPN": "Japan",
+    "JOR": "Jordan",
+    "KAZ": "Kazakhstan",
+    "KEN": "Kenya",
+    "KOS": "Kosovo",
+    "KUW": "Kuwait",
+    "KGZ": "Kyrgyzstan",
+    "LAO": "Laos",
+    "LVA": "Latvia",
+    "LBN": "Lebanon",
+    "LES": "Lesotho",
+    "LBR": "Liberia",
+    "LBY": "Libya",
+    "LIE": "Liechtenstein",
+    "LTU": "Lithuania",
+    "LUX": "Luxembourg",
+    "MAC": "Macau",
+    "MAD": "Madagascar",
+    "MWI": "Malawi",
+    "MAS": "Malaysia",
+    "MDV": "Maldives",
+    "MLI": "Mali",
+    "MLT": "Malta",
+    "MTN": "Mauritania",
+    "MRI": "Mauritius",
+    "MDA": "Moldova",
+    "MNG": "Mongolia",
+    "MNE": "Montenegro",
+    "MSR": "Montserrat",
+    "MAR": "Morocco",
+    "MOZ": "Mozambique",
+    "MYA": "Myanmar",
+    "NAM": "Namibia",
+    "NEP": "Nepal",
+    "NCL": "New Caledonia",
+    "NCA": "Nicaragua",
+    "NIG": "Niger",
+    "NGA": "Nigeria",
+    "PRK": "North Korea",
+    "MKD": "North Macedonia",
+    "NOR": "Norway",
+    "OMA": "Oman",
+    "PAK": "Pakistan",
+    "PLE": "Palestine",
+    "PNG": "Papua New Guinea",
+    "PHI": "Philippines",
+    "POL": "Poland",
+    "PUR": "Puerto Rico",
+    "QAT": "Qatar",
+    "IRL": "Republic of Ireland",
+    "ROU": "Romania",
+    "RUS": "Russia",
+    "RWA": "Rwanda",
+    "SKN": "Saint Kitts and Nevis",
+    "LCA": "Saint Lucia",
+    "VIN": "Saint Vincent and the Grenadines",
+    "SAM": "Samoa",
+    "SMR": "San Marino",
+    "STP": "São Tomé and Príncipe",
+    "SEN": "Senegal",
+    "SRB": "Serbia",
+    "SEY": "Seychelles",
+    "SLE": "Sierra Leone",
+    "SGP": "Singapore",
+    "SVK": "Slovakia",
+    "SVN": "Slovenia",
+    "SOL": "Solomon Islands",
+    "SOM": "Somalia",
+    "SSD": "South Sudan",
+    "ESP": "Spain",
+    "SRI": "Sri Lanka",
+    "SDN": "Sudan",
+    "SUR": "Suriname",
+    "SYR": "Syria",
+    "TAH": "Tahiti",
+    "TJK": "Tajikistan",
+    "TAN": "Tanzania",
+    "THA": "Thailand",
+    "TOG": "Togo",
+    "TGA": "Tonga",
+    "TUN": "Tunisia",
+    "TUR": "Turkey",
+    "TKM": "Turkmenistan",
+    "TCA": "Turks and Caicos Islands",
+    "UGA": "Uganda",
+    "UKR": "Ukraine",
+    "UAE": "United Arab Emirates",
+    "VIR": "U.S. Virgin Islands",
+    "UZB": "Uzbekistan",
+    "VAN": "Vanuatu",
+    "VIE": "Vietnam",
+    "YEM": "Yemen",
+    "ZAM": "Zambia",
+    "ZIM": "Zimbabwe"
+}
+
+
 # ────────────────────────────────────────────────────────────────────────────────
 # 3) GEOCODING + CACHING UTILITIES
 #────────────────────────────────────────────────────────────────────────────────
@@ -149,18 +366,47 @@ def save_cache(cache):
         pass
 
 
-def geocode_city(city_name, cache):
+def _alpha3_to_country_name(alpha3: str) -> str:
     """
-    Geocode a single city via Nominatim (with polite rate-limiting),
-    caching the result so we don't repeat lookups.
+    If alpha3 is in FIFA_TO_COUNTRY, return that "full name".
+    Otherwise, return alpha3 unchanged.
     """
-    if city_name in cache:
-        return cache[city_name]
+    key = alpha3.strip().upper()
+    if key in FIFA_TO_COUNTRY:
+        return FIFA_TO_COUNTRY[key]
+    return alpha3
 
+
+def geocode_city(city_name: str, country_value: str = None, cache: dict = None) -> dict:
+    """
+    Geocode a single city via Nominatim, disambiguated by:
+      • A FIFA 3-letter code (e.g. 'WAL') → full name (e.g. 'Wales'), or
+      • No country (fallback).  
+    Uses `q="CityName, CountryName"` so Nominatim picks the right city.
+    """
+    # Convert any 3-letter code to a full name
+    country_name = None
+    if country_value and len(country_value.strip()) == 3:
+        country_name = _alpha3_to_country_name(country_value.strip())
+    elif country_value:
+        country_name = country_value.strip()
+
+    # Build query key exactly as we'll ask Nominatim
+    if country_name:
+        query_key = f"{city_name.strip()}, {country_name}"
+    else:
+        query_key = city_name.strip()
+
+    # Return cached result if available
+    if cache is not None and query_key in cache:
+        return cache[query_key]
+
+    # Otherwise, ask Nominatim with q="City, Country" or "City"
+    query = query_key
     try:
         url = "https://nominatim.openstreetmap.org/search"
         params = {
-            "q": city_name,
+            "q": query,
             "format": "json",
             "limit": 1,
             "addressdetails": 1,
@@ -170,19 +416,22 @@ def geocode_city(city_name, cache):
         if resp.status_code == 200:
             data = resp.json()
             if data:
-                addr = data[0].get("address", {})
-                country = addr.get("country", "Unknown")
+                address = data[0].get("address", {})
+                found_country = address.get("country", country_name or "Unknown")
                 result = {
                     "lat": float(data[0]["lat"]),
                     "lon": float(data[0]["lon"]),
-                    "country": country,
+                    "country": found_country,
                 }
-                cache[city_name] = result
+                if cache is not None:
+                    cache[query_key] = result
                 return result
     except Exception as e:
-        st.warning(f"Geocoding failed for {city_name}: {str(e)}")
+        st.warning(f"Geocoding exception for '{query}': {e}")
 
-    cache[city_name] = None
+    # On failure, cache None so we don't retry forever
+    if cache is not None:
+        cache[query_key] = None
     return None
 
 # ────────────────────────────────────────────────────────────────────────────────
@@ -213,8 +462,11 @@ def parse_file_data(uploaded_file):
 
 def process_players_data(df):
     """
-    Normalize column names, ensure PlayerName & BirthCity exist,
-    and create a cleaned BirthCity_clean column.
+    Normalize column names so we have:
+      - df['PlayerName']
+      - df['BirthCity']
+      - df['NoB']   (FIFA 3-letter code, e.g. 'WAL', 'ENG', 'FRA', etc.)
+    Then create df['BirthCity_clean'].
     """
     col_map = {
         "Nom": "PlayerName",
@@ -223,11 +475,19 @@ def process_players_data(df):
         "Ville de naissance": "BirthCity",
         "Birth City": "BirthCity",
         "Birthplace": "BirthCity",
+        "Nation of Birth": "NoB",
+        "NoB": "NoB",  # Ensure we capture NoB directly if it's already named that way
+        "Nationality": "Nat",
+        "2nd Nat": "2nd Nat"
     }
-    for old, new in col_map.items():
-        if old in df.columns:
-            df = df.rename(columns={old: new})
-
+    
+    # Normalize column names (case-insensitive)
+    for col in df.columns:
+        for pattern, new_name in col_map.items():
+            if col.lower() == pattern.lower():
+                df = df.rename(columns={col: new_name})
+                break
+    
     if "PlayerName" not in df.columns or "BirthCity" not in df.columns:
         avail = ", ".join(df.columns)
         st.error(f"Required columns not found. Available: {avail}")
@@ -236,34 +496,68 @@ def process_players_data(df):
 
     df["BirthCity_clean"] = df["BirthCity"].apply(clean_city_name)
     df = df.dropna(subset=["PlayerName", "BirthCity_clean"])
+    
     return df
 
 
-def geocode_players(df):
-    """
-    Geocode every unique BirthCity_clean in df (with caching).
-    Returns df with new columns: lat, lon, country.
-    """
+def geocode_players(df: pd.DataFrame) -> pd.DataFrame:
     cache = load_cache()
-    unique_cities = df["BirthCity_clean"].unique()
-    to_geocode = [c for c in unique_cities if c not in cache]
+    has_nob = "NoB" in df.columns
 
+    # 1) Gather unique (city, NoB) pairs
+    unique_pairs = []
+    for _, row in df.iterrows():
+        city = row["BirthCity_clean"].strip()
+        country_value = None
+        if has_nob and pd.notna(row["NoB"]):
+            country_value = str(row["NoB"]).strip()
+        pair = (city, country_value)
+        if pair not in unique_pairs:
+            unique_pairs.append(pair)
+
+    # 2) Determine which pairs need geocoding
+    to_geocode = []
+    for city, country_value in unique_pairs:
+        if country_value and len(country_value.strip()) == 3:
+            country_name = _alpha3_to_country_name(country_value.strip())
+            cache_key = f"{city}, {country_name}"
+        elif country_value:
+            cache_key = f"{city}, {country_value.strip()}"
+        else:
+            cache_key = city
+
+        if cache_key not in cache:
+            to_geocode.append((city, country_value))
+
+    # 3) Geocode each missing pair
     if to_geocode:
-        st.info(f"Geocoding {len(to_geocode)} new cities…")
+        st.info(f"Geocoding {len(to_geocode)} city-country combos…")
         prog = st.progress(0)
-        for i, city in enumerate(to_geocode):
-            geocode_city(city, cache)
+        for i, (city, country_value) in enumerate(to_geocode):
+            result = geocode_city(city, country_value, cache)
             prog.progress((i + 1) / len(to_geocode))
-            time.sleep(0.5)  # polite rate-limit
+            time.sleep(0.5)
         save_cache(cache)
         prog.empty()
 
-    coords = df["BirthCity_clean"].map(lambda c: cache.get(c, None))
-    df["lat"] = coords.apply(lambda x: x["lat"] if isinstance(x, dict) and "lat" in x else None)
-    df["lon"] = coords.apply(lambda x: x["lon"] if isinstance(x, dict) and "lon" in x else None)
-    df["country"] = coords.apply(lambda x: x.get("country", "Unknown") if isinstance(x, dict) else None)
-    return df
+    # ————————————
+    # 4) **Fix**: Attach coords back onto each row using the **same** cache key
+    def get_coords(row):
+        city = row["BirthCity_clean"]
+        if "NoB" in row and pd.notna(row["NoB"]):
+            nob = str(row["NoB"]).strip()
+            country_name = _alpha3_to_country_name(nob)
+            cache_key = f"{city}, {country_name}"
+        else:
+            cache_key = city
+        return cache.get(cache_key)
 
+    coords = df.apply(get_coords, axis=1)
+    df["lat"] = coords.apply(lambda x: x["lat"] if isinstance(x, dict) else None)
+    df["lon"] = coords.apply(lambda x: x["lon"] if isinstance(x, dict) else None)
+    df["country"] = coords.apply(lambda x: x.get("country", "Unknown") if isinstance(x, dict) else None)
+
+    return df
 # ────────────────────────────────────────────────────────────────────────────────
 # 5) BUILD FULL-WIDTH FOLIUM MAP HTML
 #────────────────────────────────────────────────────────────────────────────────
@@ -271,6 +565,7 @@ def create_map_html(df):
     """
     Return a single HTML string containing a Folium map
     that fits all player markers. We will embed this at 100% width.
+    Now includes Nationality and 2nd Nationality in the tooltip.
     """
     valid = df.dropna(subset=["lat", "lon"])
     if valid.empty:
@@ -283,6 +578,14 @@ def create_map_html(df):
     m = folium.Map(location=[center_lat, center_lon], zoom_start=2, tiles="OpenStreetMap")
 
     for _, row in valid.iterrows():
+        # Prepare nationality information
+        nationality_code = row.get("Nat", "Unknown") if pd.notna(row.get("Nat", None)) else "Unknown"
+        nationality = _alpha3_to_country_name(nationality_code) if len(str(nationality_code).strip()) == 3 else nationality_code
+        
+        second_nat_code = row.get("2nd Nat", None)
+        has_second_nat = pd.notna(second_nat_code) and second_nat_code != "None"
+        second_nat = _alpha3_to_country_name(second_nat_code) if has_second_nat and len(str(second_nat_code).strip()) == 3 else second_nat_code
+        
         tooltip_html = f"""
         <div style="
             font-family: Arial, sans-serif;
@@ -310,8 +613,27 @@ def create_map_html(df):
                 color: #374151;
                 font-size: 13px;
                 line-height: 1.4;
-            "><strong>🏳️ Country:</strong> {row['country']}</p>
+            "><strong>🏳️ Birth Country:</strong> {row['country']}</p>
+            <p style="
+                margin: 4px 0;
+                color: #374151;
+                font-size: 13px;
+                line-height: 1.4;
+            "><strong>🌍 Nationality:</strong> {nationality}</p>"""
+        
+        # Only add 2nd nationality if it exists
+        if has_second_nat:
+            tooltip_html += f"""
+            <p style="
+                margin: 4px 0;
+                color: #374151;
+                font-size: 13px;
+                line-height: 1.4;
+            "><strong>🌍 2nd Nationality:</strong> {second_nat}</p>"""
+            
+        tooltip_html += """
         </div>"""
+        
         folium.Marker(
             location=[row["lat"], row["lon"]],
             tooltip=folium.Tooltip(tooltip_html, max_width=300),
