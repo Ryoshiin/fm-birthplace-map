@@ -417,7 +417,8 @@ def geocode_city(city_name: str, country_value: str = None, cache: dict = None) 
             data = resp.json()
             if data:
                 address = data[0].get("address", {})
-                found_country = address.get("country", country_name or "Unknown")
+                # Use the country name from FIFA codes if available
+                found_country = country_name or address.get("country", "Unknown")
                 result = {
                     "lat": float(data[0]["lat"]),
                     "lon": float(data[0]["lon"]),
@@ -555,7 +556,16 @@ def geocode_players(df: pd.DataFrame) -> pd.DataFrame:
     coords = df.apply(get_coords, axis=1)
     df["lat"] = coords.apply(lambda x: x["lat"] if isinstance(x, dict) else None)
     df["lon"] = coords.apply(lambda x: x["lon"] if isinstance(x, dict) else None)
-    df["country"] = coords.apply(lambda x: x.get("country", "Unknown") if isinstance(x, dict) else None)
+    
+    # Use FIFA country names for birth country when NoB is available
+    def get_country(row, coords_dict):
+        if isinstance(coords_dict, dict):
+            if "NoB" in row and pd.notna(row["NoB"]) and len(str(row["NoB"]).strip()) == 3:
+                return _alpha3_to_country_name(str(row["NoB"]).strip())
+            return coords_dict.get("country", "Unknown")
+        return None
+    
+    df["country"] = df.apply(lambda row: get_country(row, coords.loc[row.name]), axis=1)
 
     return df
 # ────────────────────────────────────────────────────────────────────────────────
