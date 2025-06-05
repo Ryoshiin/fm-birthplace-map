@@ -683,7 +683,7 @@ How to export the birthplace view from FM? <span class='info-icon' title='1. Nav
     
     # ---- Simple clickable link (no gap) ----
     st.markdown(
-        "<div style='margin-top: -15px;'><a href='https://mega.nz/file/QUs3TSrA#7DYuBGehr7FXfYbzxlcsXKtHjrilFnlSXJ4h9bd4d_A'>Download birthplace_view.fmf</a></div>",
+        "<div style='margin-top: -15px;'><a href='https://mega.nz/file/BQEGBDSK#KaAzX5MRC5RvJE0onqHC7naalwKqTlph5bOfdtnXVA4'>Download birthplace_view.fmf</a></div>",
         unsafe_allow_html=True,
     )
 
