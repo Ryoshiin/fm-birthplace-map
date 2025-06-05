@@ -793,6 +793,7 @@ st.markdown(
     """
     <div style="text-align: center; color: #666; padding: 1rem;">
         <p>🔧 Built with Streamlit | 🗺️ Maps by OpenStreetMap | 📍 Geocoding by Nominatim</p>
+        <p>© Created by Ryoshiin</p>
     </div>
     """,
     unsafe_allow_html=True,
