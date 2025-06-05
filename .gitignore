@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+geocode_cache.json
+.ipynb_checkpoints/
