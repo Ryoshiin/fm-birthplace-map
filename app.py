@@ -368,6 +368,14 @@ def create_map_html(df, map_style="OpenStreetMap"):
         else:
             second_nat = second_nat_code
 
+        # Convert birth country code to full name if it's a FIFA code
+        birth_country = row['country']
+        nob_code = row.get("NoB", None)
+        if pd.notna(nob_code) and len(str(nob_code).strip()) == 3:
+            birth_country_display = _alpha3_to_country_name(str(nob_code).strip())
+        else:
+            birth_country_display = birth_country
+
         tooltip_html = f"""
         <div style="
             font-family: Arial, sans-serif;
@@ -395,7 +403,7 @@ def create_map_html(df, map_style="OpenStreetMap"):
                 color: #374151;
                 font-size: 13px;
                 line-height: 1.4;
-            "><strong>🏳️ Birth Country:</strong> {row['country']}</p>
+            "><strong>🏳️ Birth Country:</strong> {birth_country_display}</p>
             <p style="
                 margin: 4px 0;
                 color: #374151;
