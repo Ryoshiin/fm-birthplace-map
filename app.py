@@ -317,9 +317,18 @@ def create_map_html(df, map_style="OpenStreetMap"):
     center_lon = valid["lon"].mean()
     
     if map_style == "Satellite":
+        # Using Esri World Imagery for better satellite view with labels
         tiles = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
         attr = 'Esri, Maxar, Earthstar Geographics, and the GIS User Community'
         m = folium.Map(location=[center_lat, center_lon], zoom_start=2, tiles=tiles, attr=attr)
+        
+        # Add a semi-transparent labels layer on top of satellite imagery
+        folium.TileLayer(
+            tiles='https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+            attr='Esri, HERE, Garmin, © OpenStreetMap contributors, and the GIS user community',
+            overlay=True,
+            name='Labels'
+        ).add_to(m)
     else:
         m = folium.Map(location=[center_lat, center_lon], zoom_start=2, tiles="OpenStreetMap")
 
