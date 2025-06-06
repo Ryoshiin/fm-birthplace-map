@@ -12,3 +12,5 @@ This is a silly Streamlit app that lets you upload a Football Manager roster exp
 
 See `requirements.txt` for details.
 
+## Access Link
+https://fm-birthplace-map.streamlit.app/
