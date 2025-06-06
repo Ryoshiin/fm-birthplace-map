@@ -8,10 +8,10 @@ import folium
 import streamlit as st
 import streamlit.components.v1 as components
 import json
+from folium.plugins import MarkerCluster
+from constants import FIFA_TO_COUNTRY, PROVINCE_LOOKUP
 
-# ────────────────────────────────────────────────────────────────────────────────
-# 0) STREAMLIT CONFIGURATION
-#────────────────────────────────────────────────────────────────────────────────
+# Setup page config
 st.set_page_config(
     page_title="FM Birthplace Map Generator",
     page_icon="",
@@ -19,9 +19,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# ────────────────────────────────────────────────────────────────────────────────
-# 1) CUSTOM CSS FOR STYLING
-#────────────────────────────────────────────────────────────────────────────────
+# CSS styling
 st.markdown(
     """
     <style>
@@ -108,295 +106,19 @@ st.markdown(
         font-size: 20px;
         vertical-align: middle;
     }
-
-    /* ===== Removed Download Button CSS ===== */
-    /* The .mega-download-btn styles were removed so that we can use a plain Markdown link instead. */
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# ────────────────────────────────────────────────────────────────────────────────
-# 2) SESSION STATE INITIALIZATION
-#────────────────────────────────────────────────────────────────────────────────
+# Init session state
 if "geocode_cache" not in st.session_state:
     st.session_state.geocode_cache = {}
 if "players_data" not in st.session_state:
     st.session_state.players_data = None
 
-# FIFA 3-letter codes to full country names
-FIFA_TO_COUNTRY = {
-    "WAL": "Wales",
-    "ENG": "England",
-    "SCO": "Scotland",
-    "NIR": "Northern Ireland",
-    "ALG": "Algeria",
-    "CIV": "Ivory Coast",
-    "CGO": "Congo",
-    "COD": "DR Congo",
-    "GER": "Germany",
-    "POR": "Portugal",
-    "CRO": "Croatia",
-    "SUI": "Switzerland",
-    "DEN": "Denmark",
-    "SWE": "Sweden",
-    "NED": "Netherlands",
-    "IRN": "Iran",
-    "KSA": "Saudi Arabia",
-    "CHN": "China",
-    "KOR": "South Korea",
-    "JPN": "Japan",
-    "RSA": "South Africa",
-    "AUS": "Australia",
-    "NZL": "New Zealand",
-    "ARG": "Argentina",
-    "BRA": "Brazil",
-    "CHI": "Chile",
-    "COL": "Colombia",
-    "ECU": "Ecuador",
-    "PAR": "Paraguay",
-    "PER": "Peru",
-    "URU": "Uruguay",
-    "VEN": "Venezuela",
-    "MEX": "Mexico",
-    "USA": "United States",
-    "CAN": "Canada",
-    "CRC": "Costa Rica",
-    "HON": "Honduras",
-    "JAM": "Jamaica",
-    "PAN": "Panama",
-    "TRI": "Trinidad and Tobago",
-    "SKN": "Saint Kitts and Nevis",
-    "LCA": "Saint Lucia",
-    "VIN": "Saint Vincent and the Grenadines",
-    "SAM": "Samoa",
-    "SMR": "San Marino",
-    "STP": "São Tomé and Príncipe",
-    "SEN": "Senegal",
-    "SRB": "Serbia",
-    "SEY": "Seychelles",
-    "SLE": "Sierra Leone",
-    "SGP": "Singapore",
-    "SVK": "Slovakia",
-    "SVN": "Slovenia",
-    "SOL": "Solomon Islands",
-    "SOM": "Somalia",
-    "SSD": "South Sudan",
-    "ESP": "Spain",
-    "SRI": "Sri Lanka",
-    "SDN": "Sudan",
-    "SUR": "Suriname",
-    "SYR": "Syria",
-    "TAH": "Tahiti",
-    "TJK": "Tajikistan",
-    "TAN": "Tanzania",
-    "THA": "Thailand",
-    "TOG": "Togo",
-    "TGA": "Tonga",
-    "TUN": "Tunisia",
-    "TUR": "Turkey",
-    "TKM": "Turkmenistan",
-    "TCA": "Turks and Caicos Islands",
-    "UGA": "Uganda",
-    "UKR": "Ukraine",
-    "UAE": "United Arab Emirates",
-    "VIR": "U.S. Virgin Islands",
-    "UZB": "Uzbekistan",
-    "VAN": "Vanuatu",
-    "VIE": "Vietnam",
-    "YEM": "Yemen",
-    "ZAM": "Zambia",
-    "ZIM": "Zimbabwe",
-    "BES": "Bonaire",
-    "BOE": "Bonaire",
-    "GUF": "French Guiana",
-    "GLP": "Guadeloupe",
-    "KIR": "Kiribati",
-    "MTQ": "Martinique",
-    "NIU": "Niue",
-    "MNP": "Northern Mariana Islands",
-    "NMI": "Northern Mariana Islands",
-    "REU": "Réunion",
-    "MAF": "Saint Martin",
-    "SMN": "Saint Martin",
-    "SXM": "Sint Maarten",
-    "SMA": "Sint Maarten",
-    "TUV": "Tuvalu",
-    "ZAN": "Zanzibar",
-    "ALA": "Åland",
-    "BSQ": "Basque Country",
-    "CAT": "Catalonia",
-    "FLK": "Falkland Islands",
-    "FIS": "Falkland Islands",
-    "GBR": "Great Britain",
-    "GOZ": "Gozo",
-    "GRL": "Greenland",
-    "GGY": "Guernsey",
-    "JER": "Jersey",
-    "IOM": "Isle of Man",
-    "MHL": "Marshall Islands",
-    "FSM": "Micronesia",
-    "MON": "Monaco",
-    "MCO": "Monaco",
-    "NRU": "Nauru",
-    "NCY": "Northern Cyprus",
-    "TRNC": "Northern Cyprus",
-    "PLW": "Palau",
-    "BLM": "Saint Barthélemy",
-    "SPM": "Saint Pierre and Miquelon",
-    "SHN": "Saint Helena",
-    "SRD": "Sardinia",
-    "SAR": "Sardinia",
-    "PMR": "Transnistria",
-    "TOK": "Tokelau",
-    "VAT": "Vatican City",
-    "WLF": "Wallis and Futuna",
-    "WAF": "Wallis and Futuna",
-    "ESH": "Western Sahara",
-    "SADR": "Western Sahara",
-    "AFG": "Afghanistan",
-    "AIA": "Anguilla",
-    "ALB": "Albania",
-    "AND": "Andorra",
-    "ANG": "Angola",
-    "ARM": "Armenia",
-    "ARU": "Aruba",
-    "ASA": "American Samoa",
-    "ATG": "Antigua and Barbuda",
-    "AUT": "Austria",
-    "AZE": "Azerbaijan",
-    "BAH": "Bahamas",
-    "BAN": "Bangladesh",
-    "BDI": "Burundi",
-    "BEL": "Belgium",
-    "BEN": "Benin",
-    "BER": "Bermuda",
-    "BHU": "Bhutan",
-    "BOL": "Bolivia",
-    "BIH": "Bosnia and Herzegovina",
-    "BOT": "Botswana",
-    "BRA": "Brazil",
-    "BRU": "Brunei",
-    "BUL": "Bulgaria",
-    "BFA": "Burkina Faso",
-    "CAM": "Cambodia",
-    "CMR": "Cameroon",
-    "CPV": "Cape Verde",
-    "CAY": "Cayman Islands",
-    "CTA": "Central African Republic",
-    "CHA": "Chad",
-    "CHN": "China",
-    "COL": "Colombia",
-    "COM": "Comoros",
-    "COK": "Cook Islands",
-    "CUB": "Cuba",
-    "CUW": "Curaçao",
-    "CYP": "Cyprus",
-    "CZE": "Czech Republic",
-    "DJI": "Djibouti",
-    "DMA": "Dominica",
-    "DOM": "Dominican Republic",
-    "ECU": "Ecuador",
-    "EGY": "Egypt",
-    "ESP": "Spain",
-    "EST": "Estonia",
-    "ETH": "Ethiopia",
-    "FRO": "Faroe Islands",
-    "FIJ": "Fiji",
-    "FIN": "Finland",
-    "FRA": "France",
-    "GAB": "Gabon",
-    "GAM": "Gambia",
-    "GEO": "Georgia",
-    "GHA": "Ghana",
-    "GIB": "Gibraltar",
-    "GRE": "Greece",
-    "GRN": "Grenada",
-    "GUM": "Guam",
-    "GUA": "Guatemala",
-    "GUI": "Guinea",
-    "GNB": "Guinea-Bissau",
-    "GUY": "Guyana",
-    "HAI": "Haiti",
-    "HKG": "Hong Kong",
-    "HUN": "Hungary",
-    "ISL": "Iceland",
-    "IND": "India",
-    "IDN": "Indonesia",
-    "IRQ": "Iraq",
-    "ISR": "Israel",
-    "ITA": "Italy",
-    "JOR": "Jordan",
-    "KAZ": "Kazakhstan",
-    "KEN": "Kenya",
-    "KOS": "Kosovo",
-    "KUW": "Kuwait",
-    "KGZ": "Kyrgyzstan",
-    "LAO": "Laos",
-    "LVA": "Latvia",
-    "LBN": "Lebanon",
-    "LES": "Lesotho",
-    "LBR": "Liberia",
-    "LBY": "Libya",
-    "LIE": "Liechtenstein",
-    "LTU": "Lithuania",
-    "LUX": "Luxembourg",
-    "MAC": "Macau",
-    "MAD": "Madagascar",
-    "MWI": "Malawi",
-    "MAS": "Malaysia",
-    "MDV": "Maldives",
-    "MLI": "Mali",
-    "MLT": "Malta",
-    "MTN": "Mauritania",
-    "MRI": "Mauritius",
-    "MDA": "Moldova",
-    "MNG": "Mongolia",
-    "MNE": "Montenegro",
-    "MSR": "Montserrat",
-    "MAR": "Morocco",
-    "MOZ": "Mozambique",
-    "MYA": "Myanmar",
-    "NAM": "Namibia",
-    "NEP": "Nepal",
-    "NCL": "New Caledonia",
-    "NCA": "Nicaragua",
-    "NIG": "Niger",
-    "NGA": "Nigeria",
-    "PRK": "North Korea",
-    "MKD": "North Macedonia",
-    "NOR": "Norway",
-    "OMA": "Oman",
-    "PAK": "Pakistan",
-    "PLE": "Palestine",
-    "PAN": "Panama",
-    "PHI": "Philippines",
-    "POL": "Poland",
-    "PUR": "Puerto Rico",
-    "QAT": "Qatar",
-    "IRL": "Republic of Ireland",
-    "ROU": "Romania",
-    "RUS": "Russia",
-    "RWA": "Rwanda",
-    "SLV": "El Salvador",
-    "SWZ": "Eswatini",
-    "TLS": "Timor-Leste",
-    "TPE": "Chinese Taipei",
-    "VGB": "British Virgin Islands",
-    "BHR": "Bahrain",
-    "BLR": "Belarus",
-    "BLZ": "Belize",
-    "BRB": "Barbados",
-    "EQG": "Equatorial Guinea",
-    "ERI": "Eritrea",
-    "PNG": "Papua New Guinea"
-}
-
-# ────────────────────────────────────────────────────────────────────────────────
-# 3) GEOCODING + CACHING UTILITIES
-#────────────────────────────────────────────────────────────────────────────────
 def load_cache():
-    """Load geocoding cache from local JSON (if it exists)."""
+    """Load geocoding cache from disk if available"""
     cache_file = "geocode_cache.json"
     if os.path.exists(cache_file):
         try:
@@ -406,9 +128,8 @@ def load_cache():
             return {}
     return {}
 
-
 def save_cache(cache):
-    """Save updated geocoding cache to JSON."""
+    """Save geocoding cache to disk"""
     cache_file = "geocode_cache.json"
     try:
         with open(cache_file, "w") as f:
@@ -416,88 +137,85 @@ def save_cache(cache):
     except:
         pass
 
-
 def _alpha3_to_country_name(alpha3: str) -> str:
-    """
-    If alpha3 is in FIFA_TO_COUNTRY, return that "full name".
-    Otherwise, return alpha3 unchanged.
-    """
+    """Convert FIFA code to country name"""
     key = alpha3.strip().upper()
-    if key in FIFA_TO_COUNTRY:
-        return FIFA_TO_COUNTRY[key]
-    return alpha3
+    return FIFA_TO_COUNTRY.get(key, alpha3)
 
+def build_query_key(row):
+    """Create geocoding query from city and country info"""
+    base = row["BirthCity_base"]
+    paren = row.get("BirthCity_paren", None)
+    nob = row.get("NoB", None)
 
-def geocode_city(city_name: str, country_value: str = None, cache: dict = None) -> dict:
-    """
-    Geocode a single city via Nominatim, disambiguated by:
-      • A FIFA 3-letter code (e.g. 'WAL') → full name (e.g. 'Wales'), or
-      • No country (fallback).  
-    Uses `q="CityName, CountryName"` so Nominatim picks the right city.
-    """
-    # Convert any 3-letter code to a full name
-    country_name = None
-    if country_value and len(country_value.strip()) == 3:
-        country_name = _alpha3_to_country_name(country_value.strip())
-    elif country_value:
-        country_name = country_value.strip()
+    parts = [base]
+    used_country = False
 
-    # Build query key exactly as we'll ask Nominatim
-    if country_name:
-        query_key = f"{city_name.strip()}, {country_name}"
-    else:
-        query_key = city_name.strip()
+    if isinstance(paren, str) and paren.strip():
+        uc = paren.strip().upper()
+        if len(uc) == 3 and uc in FIFA_TO_COUNTRY:
+            parts.append(_alpha3_to_country_name(uc))
+            used_country = True
+        elif len(uc) == 2 and uc in PROVINCE_LOOKUP:
+            parts.append(PROVINCE_LOOKUP[uc])
+        else:
+            parts.append(paren.strip())
 
-    # Return cached result if available
-    if cache is not None and query_key in cache:
-        return cache[query_key]
+    if not used_country and isinstance(nob, str) and nob.strip():
+        if len(nob.strip()) == 3 and nob.strip().upper() in FIFA_TO_COUNTRY:
+            parts.append(_alpha3_to_country_name(nob.strip().upper()))
+        else:
+            parts.append(nob.strip())
 
-    # Otherwise, ask Nominatim with q="City, Country" or "City"
-    query = query_key
+    return ", ".join(parts)
+
+def geocode_city(full_query: str, cache: dict = None) -> dict:
+    """Geocode location with Nominatim API, using cache when available"""
+    if cache is not None and full_query in cache:
+        return cache[full_query]
+
     try:
         url = "https://nominatim.openstreetmap.org/search"
         params = {
-            "q": query,
+            "q": full_query,
             "format": "json",
             "limit": 1,
             "addressdetails": 1,
         }
         headers = {"User-Agent": "FM-Birthplace-Map/1.0"}
         resp = requests.get(url, params=params, headers=headers, timeout=10)
+        
         if resp.status_code == 200:
             data = resp.json()
             if data:
                 address = data[0].get("address", {})
-                # Use the country name from FIFA codes if available
-                found_country = country_name or address.get("country", "Unknown")
                 result = {
                     "lat": float(data[0]["lat"]),
                     "lon": float(data[0]["lon"]),
-                    "country": found_country,
+                    "country": address.get("country", "Unknown"),
                 }
                 if cache is not None:
-                    cache[query_key] = result
+                    cache[full_query] = result
                 return result
     except Exception as e:
-        st.warning(f"Geocoding exception for '{query}': {e}")
+        st.warning(f"Geocoding exception for '{full_query}': {e}")
 
-    # On failure, cache None so we don't retry forever
     if cache is not None:
-        cache[query_key] = None
+        cache[full_query] = None
     return None
 
-# ────────────────────────────────────────────────────────────────────────────────
-# 4) DATA CLEANING HELPERS
-#────────────────────────────────────────────────────────────────────────────────
 def clean_city_name(city):
-    """Remove parentheses (and their contents) + extra whitespace from city name."""
+    """Split city name into base and parenthetical parts"""
     if not isinstance(city, str):
-        return city
-    return re.sub(r"\s*\([^)]*\)", "", city).strip()
+        return city, None
 
+    m = re.search(r"^(.*?)\s*\(([^)]+)\)\s*$", city.strip())
+    if m:
+        return m.group(1).strip(), m.group(2).strip()
+    return city.strip(), None
 
 def parse_file_data(uploaded_file):
-    """Read CSV or HTML export into a pandas DataFrame."""
+    """Parse CSV or HTML file into DataFrame"""
     try:
         if uploaded_file.name.lower().endswith(".csv"):
             return pd.read_csv(uploaded_file)
@@ -511,15 +229,8 @@ def parse_file_data(uploaded_file):
         st.error(f"Error parsing file: {str(e)}")
         return None
 
-
 def process_players_data(df):
-    """
-    Normalize column names so we have:
-      - df['PlayerName']
-      - df['BirthCity']
-      - df['NoB']   (FIFA 3-letter code, e.g. 'WAL', 'ENG', 'FRA', etc.)
-    Then create df['BirthCity_clean'].
-    """
+    """Normalize columns and process birth city data"""
     col_map = {
         "Nom": "PlayerName",
         "Name": "PlayerName",
@@ -528,12 +239,11 @@ def process_players_data(df):
         "Birth City": "BirthCity",
         "Birthplace": "BirthCity",
         "Nation of Birth": "NoB",
-        "NoB": "NoB",  # Ensure we capture NoB directly if it's already named that way
+        "NoB": "NoB",
         "Nationality": "Nat",
         "2nd Nat": "2nd Nat"
     }
     
-    # Normalize column names (case-insensitive)
     for col in df.columns:
         for pattern, new_name in col_map.items():
             if col.lower() == pattern.lower():
@@ -546,88 +256,58 @@ def process_players_data(df):
         st.info("Expected: 'Nom'/'Name' and 'Ville de naissance'/'Birth City'")
         return None
 
-    df["BirthCity_clean"] = df["BirthCity"].apply(clean_city_name)
-    df = df.dropna(subset=["PlayerName", "BirthCity_clean"])
+    df[["BirthCity_base", "BirthCity_paren"]] = (
+        df["BirthCity"].apply(lambda x: pd.Series(clean_city_name(x)))
+    )
     
+    df = df.dropna(subset=["PlayerName", "BirthCity_base"])
     return df
 
-
 def geocode_players(df: pd.DataFrame) -> pd.DataFrame:
+    """Geocode all player birthplaces with progress tracking"""
     cache = load_cache()
-    has_nob = "NoB" in df.columns
 
-    # 1) Gather unique (city, NoB) pairs
-    unique_pairs = []
+    unique_queries = []
     for _, row in df.iterrows():
-        city = row["BirthCity_clean"].strip()
-        country_value = None
-        if has_nob and pd.notna(row["NoB"]):
-            country_value = str(row["NoB"]).strip()
-        pair = (city, country_value)
-        if pair not in unique_pairs:
-            unique_pairs.append(pair)
+        q = build_query_key(row)
+        if q not in unique_queries:
+            unique_queries.append(q)
 
-    # 2) Determine which pairs need geocoding
-    to_geocode = []
-    for city, country_value in unique_pairs:
-        if country_value and len(country_value.strip()) == 3:
-            country_name = _alpha3_to_country_name(country_value.strip())
-            cache_key = f"{city}, {country_name}"
-        elif country_value:
-            cache_key = f"{city}, {country_value.strip()}"
-        else:
-            cache_key = city
+    to_geocode = [q for q in unique_queries if q not in cache]
 
-        if cache_key not in cache:
-            to_geocode.append((city, country_value))
-
-    # 3) Geocode each missing pair
     if to_geocode:
-        st.info(f"Geocoding {len(to_geocode)} city-country combos…")
+        st.info(f"Geocoding {len(to_geocode)} locations…")
         prog = st.progress(0)
-        for i, (city, country_value) in enumerate(to_geocode):
-            result = geocode_city(city, country_value, cache)
+        
+        for i, query_string in enumerate(to_geocode):
+            result = geocode_city(query_string, cache)
+
+            if result is None:
+                parts = [p.strip() for p in query_string.split(",")]
+                if len(parts) >= 2:
+                    fallback_query = f"{parts[0]}, {parts[-1]}"
+                    result = geocode_city(fallback_query, cache)
+
+            cache[query_string] = result
             prog.progress((i + 1) / len(to_geocode))
             time.sleep(0.5)
+
         save_cache(cache)
         prog.empty()
 
-    # ————————————
-    # 4) **Fix**: Attach coords back onto each row using the **same** cache key
-    def get_coords(row):
-        city = row["BirthCity_clean"]
-        if "NoB" in row and pd.notna(row["NoB"]):
-            nob = str(row["NoB"]).strip()
-            country_name = _alpha3_to_country_name(nob)
-            cache_key = f"{city}, {country_name}"
-        else:
-            cache_key = city
-        return cache.get(cache_key)
+    def lookup_coords(row):
+        key = build_query_key(row)
+        return cache.get(key)
 
-    coords = df.apply(get_coords, axis=1)
-    df["lat"] = coords.apply(lambda x: x["lat"] if isinstance(x, dict) else None)
-    df["lon"] = coords.apply(lambda x: x["lon"] if isinstance(x, dict) else None)
-    
-    # Use FIFA country names for birth country when NoB is available
-    def get_country(row, coords_dict):
-        if isinstance(coords_dict, dict):
-            if "NoB" in row and pd.notna(row["NoB"]) and len(str(row["NoB"]).strip()) == 3:
-                return _alpha3_to_country_name(str(row["NoB"]).strip())
-            return coords_dict.get("country", "Unknown")
-        return None
-    
-    df["country"] = df.apply(lambda row: get_country(row, coords.loc[row.name]), axis=1)
+    coords_series = df.apply(lookup_coords, axis=1)
+    df["lat"] = coords_series.apply(lambda x: x["lat"] if isinstance(x, dict) else None)
+    df["lon"] = coords_series.apply(lambda x: x["lon"] if isinstance(x, dict) else None)
+    df["country"] = coords_series.apply(lambda x: x["country"] if isinstance(x, dict) else None)
 
     return df
-# ────────────────────────────────────────────────────────────────────────────────
-# 5) BUILD FULL-WIDTH FOLIUM MAP HTML
-#────────────────────────────────────────────────────────────────────────────────
-def create_map_html(df):
-    """
-    Return a single HTML string containing a Folium map
-    that fits all player markers. We will embed this at 100% width.
-    Now includes Nationality and 2nd Nationality in the tooltip.
-    """
+
+def create_map_html(df, map_style="OpenStreetMap"):
+    """Create Folium map with player markers"""
     valid = df.dropna(subset=["lat", "lon"])
     if valid.empty:
         st.warning("No valid coordinates found to plot.")
@@ -635,18 +315,59 @@ def create_map_html(df):
 
     center_lat = valid["lat"].mean()
     center_lon = valid["lon"].mean()
+    
+    if map_style == "Satellite":
+        tiles = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+        attr = 'Esri, Maxar, Earthstar Geographics, and the GIS User Community'
+        m = folium.Map(location=[center_lat, center_lon], zoom_start=2, tiles=tiles, attr=attr)
+    else:
+        m = folium.Map(location=[center_lat, center_lon], zoom_start=2, tiles="OpenStreetMap")
 
-    m = folium.Map(location=[center_lat, center_lon], zoom_start=2, tiles="OpenStreetMap")
-
+    cluster = MarkerCluster(
+        icon_create_function="""
+        function(cluster) {
+          const count = cluster.getChildCount();
+          return L.divIcon({
+            html: `
+              <div style="
+                background-color: #38a7da;
+                color: white;
+                width: 30px;
+                height: 30px;
+                line-height: 30px;
+                border-radius: 15px;
+                text-align: center;
+                font-weight: bold;
+                font-size: 14px;
+              ">
+                ${count}
+              </div>`,
+            className: 'custom-cluster',
+            iconSize: [30, 30]
+          });
+        }
+        """,
+        options={
+            "maxClusterRadius": 1,
+            "spiderfyOnMaxZoom": True,
+            "showCoverageOnHover": True
+        }
+    ).add_to(m)
+    
     for _, row in valid.iterrows():
-        # Prepare nationality information
-        nationality_code = row.get("Nat", "Unknown") if pd.notna(row.get("Nat", None)) else "Unknown"
-        nationality = _alpha3_to_country_name(nationality_code) if len(str(nationality_code).strip()) == 3 else nationality_code
-        
+        nationality_code = row.get("Nat", "Unknown")
+        if pd.notna(nationality_code) and len(str(nationality_code).strip()) == 3:
+            nationality = _alpha3_to_country_name(str(nationality_code).strip())
+        else:
+            nationality = nationality_code if pd.notna(nationality_code) else "Unknown"
+
         second_nat_code = row.get("2nd Nat", None)
         has_second_nat = pd.notna(second_nat_code) and second_nat_code != "None"
-        second_nat = _alpha3_to_country_name(second_nat_code) if has_second_nat and len(str(second_nat_code).strip()) == 3 else second_nat_code
-        
+        if has_second_nat and len(str(second_nat_code).strip()) == 3:
+            second_nat = _alpha3_to_country_name(str(second_nat_code).strip())
+        else:
+            second_nat = second_nat_code
+
         tooltip_html = f"""
         <div style="
             font-family: Arial, sans-serif;
@@ -681,8 +402,7 @@ def create_map_html(df):
                 font-size: 13px;
                 line-height: 1.4;
             "><strong>🌍 Nationality:</strong> {nationality}</p>"""
-        
-        # Only add 2nd nationality if it exists
+            
         if has_second_nat:
             tooltip_html += f"""
             <p style="
@@ -691,16 +411,15 @@ def create_map_html(df):
                 font-size: 13px;
                 line-height: 1.4;
             "><strong>🌍 2nd Nationality:</strong> {second_nat}</p>"""
-            
-        tooltip_html += """
-        </div>"""
-        
+        tooltip_html += "</div>"
+
         folium.Marker(
             location=[row["lat"], row["lon"]],
             tooltip=folium.Tooltip(tooltip_html, max_width=300),
             icon=folium.Icon(color="blue", icon="user", prefix="fa"),
-        ).add_to(m)
+        ).add_to(cluster)
 
+    # Fit map to show all markers
     if len(valid) > 1:
         sw = valid[["lat", "lon"]].min().values.tolist()
         ne = valid[["lat", "lon"]].max().values.tolist()
@@ -708,24 +427,21 @@ def create_map_html(df):
 
     return m.get_root().render()
 
-# ────────────────────────────────────────────────────────────────────────────────
-# 6) APPLICATION HEADER (NO ⚽)
-#────────────────────────────────────────────────────────────────────────────────
+
+# Header
 st.markdown(
     """
     <div class="main-header">
         <h1>FM Birthplace Map Generator</h1>
-        <p>Upload your Football Manager export and see a full-width world map of your players' birthplaces</p>
+        <p>Upload your Football Manager data to visualize your players' birthplaces on an interactive world map</p>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
-# ────────────────────────────────────────────────────────────────────────────────
-# 7) MAIN LOGIC: UPLOAD OR DISPLAY MAP
-#────────────────────────────────────────────────────────────────────────────────
+# Upload or display map
 if st.session_state.players_data is None:
-    # ---- Upload Section ----
+    # Upload section
     st.markdown(
         """
         <div class="upload-section" style="
@@ -734,7 +450,7 @@ if st.session_state.players_data is None:
             padding: 20px; 
             border-radius: 8px;
         ">
-            <h3 style="color: var(--accent-color, #4DA6FF);">📁 Upload Your FM Export</h3>
+            <h3 style="color: var(--accent-color, #4DA6FF);">📁 Upload Player Birthplace Data</h3>
             <p style="color: var(--secondary-text-color, #CCCCCC);">Supported formats: HTML (direct from FM) or CSV</p>
         </div>
         <style>
@@ -757,20 +473,37 @@ if st.session_state.players_data is None:
         """,
         unsafe_allow_html=True,
     )
-
-    # ---- How to export the birthplace view from FM? with Info Tooltip ----
-    instruction_text_upload = '''
-<span style="color: var(--text-color, #333333);">How to export the birthplace view from FM? <span class='info-icon' style="color: var(--accent-color, #1E88E5); cursor: pointer;" title='1. Navigate to the squad page in Football Manager.\n2. Load the birthplace_view so the Birthplace column is visible.\n3. Click the first player row to highlight it.\n4. Select all players: Ctrl+A (Windows) or ⌘+A (macOS).\n5. Open the print/export dialog: Ctrl+P (Windows) or ⌘+P (macOS).\n6. Choose "Web Page" (or "Save as Web Page") and save.'>&#9432;</span></span>
-'''  
-    st.markdown(instruction_text_upload, unsafe_allow_html=True)
-    
-    # ---- Simple clickable link (no gap) ----
+    # Export instructions
     st.markdown(
-        "<div style='margin-top: -15px;'><a href='https://mega.nz/file/BQEGBDSK#KaAzX5MRC5RvJE0onqHC7naalwKqTlph5bOfdtnXVA4' style='color: var(--accent-color, #1E88E5); text-decoration: underline;'>Download birthplace_view.fmf</a></div>",
+        """
+        <div class="instructions-card" style="
+            background-color: var(--background-color, #1E1E1E); 
+            color: var(--text-color, #E0E0E0);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--accent-color, #4DA6FF);
+        ">
+            <h4 style="color: var(--accent-color, #4DA6FF); margin-top: 0;">📋 How to export player data from FM:</h4>
+            <ol style="margin-left: 20px; padding-left: 0;">
+                <li>Navigate to the squad page in Football Manager</li>
+                <li>Import the <strong>birthplace_view</strong> view (download link below) to display birthplace and other required columns</li>
+                <li>Click the first player row to highlight it</li>
+                <li>Select all players: <kbd>Ctrl+A</kbd> (Windows) or <kbd>⌘+A</kbd> (macOS)</li>
+                <li>Open the print/export dialog: <kbd>Ctrl+P</kbd> (Windows) or <kbd>⌘+P</kbd> (macOS)</li>
+                <li>Choose "Web Page" (or "Save as Web Page") and save</li>
+            </ol>
+            <div style="margin-top: 10px;">
+                <a href="https://mega.nz/file/BQEGBDSK#KaAzX5MRC5RvJE0onqHC7naalwKqTlph5bOfdtnXVA4" 
+                   style="color: var(--accent-color, #4DA6FF); text-decoration: underline; font-weight: bold;">
+                   📥 Download birthplace_view.fmf
+                </a>
+            </div>
+        </div>
+        """,
         unsafe_allow_html=True,
     )
-
-    # ---- Add separation before file uploader ----
+    
     st.markdown("<hr style='margin: 20px 0; border-color: var(--secondary-text-color, #666666); opacity: 0.3;'>", unsafe_allow_html=True)
     
     uploaded_file = st.file_uploader(
@@ -779,7 +512,6 @@ if st.session_state.players_data is None:
         key="upload_file",
         help="Must contain at least 'Name' and 'Birth City' columns",
     )
-
     if uploaded_file is not None:
         with st.spinner("Processing and geocoding…"):
             df_raw = parse_file_data(uploaded_file)
@@ -789,16 +521,15 @@ if st.session_state.players_data is None:
                     st.success(f"✅ Loaded {len(df_proc)} players.")
                     with st.spinner("Geocoding…"):
                         df_geo = geocode_players(df_proc)
-                        # Set session state and force rerun
+                        # Store data and refresh
                         st.session_state.players_data = df_geo
                         st.rerun()
-
 else:
-    # ---- Stats Cards on top ----
+    # Stats display
     df = st.session_state.players_data
     valid = df.dropna(subset=["lat", "lon"])  
-    unique_cities = df["BirthCity_clean"].nunique()
-    unique_ctrs = df["country"].dropna().nunique()
+    unique_cities = df["BirthCity_base"].nunique()
+    unique_ctrs   = df["country"].dropna().nunique()
 
     c1, c2, c3, c4 = st.columns(4, gap="large")
     with c1:
@@ -834,13 +565,19 @@ else:
             unsafe_allow_html=True,
         )
 
-    # ---- Full-Width Map ----
-    map_html = create_map_html(df)
+    # Map style options
+    map_style = st.radio(
+        "Map Style:",
+        ["OpenStreetMap", "Satellite"],
+        horizontal=True
+    )
+
+    # Display map
+    map_html = create_map_html(df, map_style)
     if map_html is not None:
         st.markdown("## World Map", unsafe_allow_html=True)
         components.html(map_html, height=800, width=0)
-
-    # ---- Clear Data Button (centered) ----
+    # Reset button
     st.markdown("<div class='clear-container'>", unsafe_allow_html=True)
     if st.button("Clear Data"):
         del st.session_state["players_data"]
@@ -851,16 +588,15 @@ else:
         st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # ---- Show Failed Geocoding if needed ----
+    # Show geocoding failures
     failed = df[df["lat"].isna()]
     if not failed.empty:
         with st.expander(f"⚠️ Failed to geocode {len(failed)} players"):
-            st.dataframe(failed[["PlayerName", "BirthCity", "BirthCity_clean"]], use_container_width=True)
-            st.info("Try adding country names to improve accuracy.")
+            st.dataframe(failed[["PlayerName", "BirthCity", "BirthCity_base", "BirthCity_paren"]], use_container_width=True)
+            st.info("Try adding country names or parentheses to improve accuracy.")
 
-# ────────────────────────────────────────────────────────────────────────────────
-# 8) FOOTER
-#────────────────────────────────────────────────────────────────────────────────
+
+# Footer
 st.markdown("---")
 st.markdown(
     """
