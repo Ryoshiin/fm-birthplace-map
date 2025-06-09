@@ -14,6 +14,7 @@ See `requirements.txt` for details.
 
 ## To Do
 - [ ]  Display a randomly selected house from the player’s birthplace
+- [ ]  Add supports for other languages (currently the exported view has to be set to english)
 
 ## Access Link
 https://fm-birthplace-map.streamlit.app/
