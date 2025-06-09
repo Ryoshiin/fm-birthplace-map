@@ -317,12 +317,10 @@ def create_map_html(df, map_style="OpenStreetMap"):
     center_lon = valid["lon"].mean()
     
     if map_style == "Satellite":
-        # Using Esri World Imagery for better satellite view with labels
         tiles = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
         attr = 'Esri, Maxar, Earthstar Geographics, and the GIS User Community'
         m = folium.Map(location=[center_lat, center_lon], zoom_start=2, tiles=tiles, attr=attr)
         
-        # Add a semi-transparent labels layer on top of satellite imagery
         folium.TileLayer(
             tiles='https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
             attr='Esri, HERE, Garmin, © OpenStreetMap contributors, and the GIS user community',
@@ -503,7 +501,7 @@ if st.session_state.players_data is None:
         ">
             <h4 style="color: var(--accent-color, #4DA6FF); margin-top: 0;">📋 How to export player data from FM:</h4>
             <ol style="margin-left: 20px; padding-left: 0;">
-                <li>Navigate to the squad page in Football Manager</li>
+                <li>Navigate to the squad page in Football Manager (your game has to be set to English)</li>
                 <li>Import the <strong>birthplace_view</strong> view (download link below) to display birthplace and other required columns</li>
                 <li>Click the first player row to highlight it</li>
                 <li>Select all players: <kbd>Ctrl+A</kbd> (Windows) or <kbd>⌘+A</kbd> (macOS)</li>
