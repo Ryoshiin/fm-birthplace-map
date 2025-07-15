@@ -207,7 +207,7 @@ FIFA_TO_COUNTRY = {
     "KGZ": "Kyrgyzstan",
     "LAO": "Laos",
     "LVA": "Latvia",
-    "LBN": "Lebanon",
+    "LIB": "Lebanon",
     "LES": "Lesotho",
     "LBR": "Liberia",
     "LBY": "Libya",
