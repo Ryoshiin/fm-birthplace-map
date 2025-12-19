@@ -481,6 +481,11 @@ def create_map_html(df, map_style="OpenStreetMap"):
         ne = valid[["lat", "lon"]].max().values.tolist()
         m.fit_bounds([sw, ne], padding=(20, 20))
 
+    map_name = m.get_name()
+    m.get_root().html.add_child(folium.Element(
+        f"<script>setTimeout(function(){{ {map_name}.invalidateSize(); }}, 300);</script>"
+    ))
+
     return m.get_root().render()
 
 
@@ -632,7 +637,7 @@ else:
     map_html = create_map_html(df, map_style)
     if map_html is not None:
         st.markdown("## World Map", unsafe_allow_html=True)
-        components.html(map_html, height=800, width=0)
+        components.html(map_html, height=800, scrolling=False)
     # Reset button
     st.markdown("<div class='clear-container'>", unsafe_allow_html=True)
     if st.button("Clear Data"):
