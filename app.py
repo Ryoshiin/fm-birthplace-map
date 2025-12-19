@@ -360,16 +360,31 @@ def create_map_html(df, map_style="OpenStreetMap"):
     if map_style == "Satellite":
         tiles = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
         attr = 'Esri, Maxar, Earthstar Geographics, and the GIS User Community'
-        m = folium.Map(location=[center_lat, center_lon], zoom_start=2, tiles=tiles, attr=attr)
+        m = folium.Map(location=[center_lat, center_lon], zoom_start=2, tiles=None, max_bounds=True)
         
         folium.TileLayer(
-            tiles='https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
-            attr='Esri, HERE, Garmin, © OpenStreetMap contributors, and the GIS user community',
+            tiles=tiles,
+            attr=attr,
+            name="Satellite",
+            no_wrap=True
+        ).add_to(m)
+
+        folium.TileLayer(
+            tiles="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+            attr="Esri, HERE, Garmin, © OpenStreetMap contributors, and the GIS user community",
             overlay=True,
-            name='Labels'
+            name="Labels",
+            no_wrap=True
         ).add_to(m)
     else:
-        m = folium.Map(location=[center_lat, center_lon], zoom_start=2, tiles="OpenStreetMap")
+        m = folium.Map(location=[center_lat, center_lon], zoom_start=2, tiles=None, max_bounds=True)
+
+        folium.TileLayer(
+            tiles="OpenStreetMap",
+            name="OpenStreetMap",
+            no_wrap=True
+        ).add_to(m)
+
 
     cluster = MarkerCluster(
         icon_create_function="""
