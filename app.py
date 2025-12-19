@@ -11,6 +11,8 @@ import json
 from folium.plugins import MarkerCluster
 from constants import FIFA_TO_COUNTRY, PROVINCE_LOOKUP
 
+LOCATIONIQ_SEARCH_URL = "https://eu1.locationiq.com/v1/search"
+
 # Setup page config
 st.set_page_config(
     page_title="FM Birthplace Map Generator",
@@ -170,39 +172,75 @@ def build_query_key(row):
     return ", ".join(parts)
 
 def geocode_city(full_query: str, cache: dict = None) -> dict:
-    """Geocode location with Nominatim API, using cache when available"""
     if cache is not None and full_query in cache:
         return cache[full_query]
 
+    # reject garbage queries early
+    if not isinstance(full_query, str):
+        if cache is not None:
+            cache[full_query] = None
+        return None
+    q = full_query.strip()
+    if not q or q == "-" or q.startswith("-,"):
+        if cache is not None:
+            cache[full_query] = None
+        return None
+
     try:
-        url = "https://nominatim.openstreetmap.org/search"
         params = {
-            "q": full_query,
+            "key": st.secrets["LOCATIONIQ_KEY"],
+            "q": q,
             "format": "json",
             "limit": 1,
             "addressdetails": 1,
         }
-        headers = {"User-Agent": "FM-Birthplace-Map/1.0"}
-        resp = requests.get(url, params=params, headers=headers, timeout=10)
-        
-        if resp.status_code == 200:
-            data = resp.json()
-            if data:
-                address = data[0].get("address", {})
-                result = {
-                    "lat": float(data[0]["lat"]),
-                    "lon": float(data[0]["lon"]),
-                    "country": address.get("country", "Unknown"),
-                }
-                if cache is not None:
-                    cache[full_query] = result
-                return result
+
+        resp = requests.get(LOCATIONIQ_SEARCH_URL, params=params, timeout=10)
+
+        if resp.status_code == 429:
+            st.error("LocationIQ rate-limited (HTTP 429).")
+            if cache is not None:
+                cache[full_query] = None
+            return None
+
+        if resp.status_code in (401, 403):
+            st.error(f"LocationIQ auth denied (HTTP {resp.status_code}).")
+            if cache is not None:
+                cache[full_query] = None
+            return None
+
+        if resp.status_code != 200:
+            st.warning(f"LocationIQ HTTP {resp.status_code} for '{q}'")
+            if cache is not None:
+                cache[full_query] = None
+            return None
+
+        data = resp.json()
+
+        if isinstance(data, dict) and data.get("error"):
+            st.warning(f"LocationIQ error for '{q}': {data.get('error')}")
+            if cache is not None:
+                cache[full_query] = None
+            return None
+
+        if isinstance(data, list) and data:
+            address = data[0].get("address", {}) or {}
+            result = {
+                "lat": float(data[0]["lat"]),
+                "lon": float(data[0]["lon"]),
+                "country": address.get("country", "Unknown"),
+            }
+            if cache is not None:
+                cache[full_query] = result
+            return result
+
     except Exception as e:
-        st.warning(f"Geocoding exception for '{full_query}': {e}")
+        st.warning(f"Geocoding exception for '{q}': {e}")
 
     if cache is not None:
         cache[full_query] = None
     return None
+
 
 def clean_city_name(city):
     """Split city name into base and parenthetical parts"""
@@ -261,6 +299,9 @@ def process_players_data(df):
     )
     
     df = df.dropna(subset=["PlayerName", "BirthCity_base"])
+    df = df[df["BirthCity_base"].astype(str).str.strip().ne("-")]
+    df = df[df["BirthCity_base"].astype(str).str.strip().ne("")]
+
     return df
 
 def geocode_players(df: pd.DataFrame) -> pd.DataFrame:
@@ -290,7 +331,7 @@ def geocode_players(df: pd.DataFrame) -> pd.DataFrame:
 
             cache[query_string] = result
             prog.progress((i + 1) / len(to_geocode))
-            time.sleep(0.5)
+            time.sleep(1.1)
 
         save_cache(cache)
         prog.empty()
@@ -616,7 +657,7 @@ st.markdown("---")
 st.markdown(
     """
     <div style="text-align: center; color: #666; padding: 1rem;">
-        <p>🔧 Built with Streamlit | 🗺️ Maps by OpenStreetMap | 📍 Geocoding by Nominatim</p>
+        <p>🔧 Built with Streamlit | 🗺️ Maps by OpenStreetMap | 📍 Geocoding by LocationIQ</p>
         <p>© Created by Ryoshiin, 2025</p>
     </div>
     """,
